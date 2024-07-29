@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/css/register.css" rel="stylesheet" type="text/css"/>
+    <title>Formulario de registro</title>
+</head>
+<body>
+    <h2>Registro</h2>
+    <form id="registroForm">
+        <label for="email">Correo electrónico:</label>
+        <input type="email" id="emailreg" name="email" required>
+        <br>
+        <label for="password">Contraseña:</label>
+        <input type="password" id="passwordreg" name="password" required>
+        <br>
+        <button type="button" id="registro">Registrarse</button>
+    </form>
+    <p>¿Ya tienes una cuenta? <a href="/index.html">Inicia sesión aquí</a>.</p>
+
+    <!-- Importar Firebase desde CDN -->
+    <script type="module">
+        // Importar las funciones necesarias del SDK de Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+        // Configuración de Firebase para tu aplicación web
+        const firebaseConfig = {
+          apiKey: "AIzaSyCk3UuOOfbQdrEQvrlRR6eB4yit662MagI",
+          authDomain: "quimii.firebaseapp.com",
+          projectId: "quimii",
+          storageBucket: "quimii.appspot.com",
+          messagingSenderId: "985736314088",
+          appId: "1:985736314088:web:9a5ec1a1386448affddd5d"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Asegurarse de que el DOM esté completamente cargado antes de agregar el event listener
+        document.addEventListener('DOMContentLoaded', () => {
+            const registro = document.getElementById('registro');
+            
+            registro.addEventListener('click', () => {
+                const email = document.getElementById('emailreg').value;
+                const password = document.getElementById('passwordreg').value;
+
+                createUserWithEmailAndPassword(auth, email, password)
+                    .then((userCredential) => {
+                        alert("Usuario creado");
+                        return sendEmailVerification(userCredential.user);
+                    })
+                    .then(() => {
+                        alert('Se ha enviado un correo de verificación');
+                    })
+                    .catch((error) => {
+                        console.error("Error:", error); // Registra el error en la consola para depuración
+                        const errorCode = error.code;
+
+                        if (errorCode === 'auth/email-already-in-use') {
+                            alert('El correo ya está en uso');
+                        } else if (errorCode === 'auth/invalid-email') {
+                            alert('El correo no es válido');
+                        } else if (errorCode === 'auth/weak-password') {
+                            alert('La contraseña debe tener al menos 6 caracteres');
+                        } else {
+                            alert('Error desconocido: ' + error.message);
+                        }
+                    });
+            });
+        });
+    </script>
+</body>
+</html>
